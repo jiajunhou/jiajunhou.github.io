@@ -1,0 +1,808 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="jj_hou">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="**六 **Sleuth–链路追踪6.0 准备工作 把网关中的自定义的断言，过滤器等全部注释   – &#x2F;&#x2F; @Component  把网关中的路由的设置注释掉，采用最简单的网关配置来测试  – 使用微服务名来作为请求前缀  在商品微服务的根据id查询商品信息的接口中加入休眠代码  – Thread.sleep(5000);  在订单微服务中的feign远程调用的注解改为  @F">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sleuth&amp;Zipkin链路追踪">
+<meta property="og:url" content="http://example.com/2025/01/31/Sleuth-Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="**六 **Sleuth–链路追踪6.0 准备工作 把网关中的自定义的断言，过滤器等全部注释   – &#x2F;&#x2F; @Component  把网关中的路由的设置注释掉，采用最简单的网关配置来测试  – 使用微服务名来作为请求前缀  在商品微服务的根据id查询商品信息的接口中加入休眠代码  – Thread.sleep(5000);  在订单微服务中的feign远程调用的注解改为  @F">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808211317188.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808211505052.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/Snipaste_2023-08-08_21-16-38.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808212013900.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808212237260.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20240530173557890.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20240530173714147.png">
+<meta property="article:published_time" content="2025-01-31T13:13:24.000Z">
+<meta property="article:modified_time" content="2025-01-24T14:58:08.665Z">
+<meta property="article:author" content="jj_hou">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808211317188.png">
+  
+  
+  
+  <title>Sleuth&amp;Zipkin链路追踪 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":65,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>JJ_HOU_nb_666</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Sleuth&amp;Zipkin链路追踪"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-01-31 21:13" pubdate>
+          2025年1月31日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          25 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Sleuth&amp;Zipkin链路追踪</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="六-Sleuth–链路追踪"><a href="#六-Sleuth–链路追踪" class="headerlink" title="**六 **Sleuth–链路追踪"></a>**六 **Sleuth–链路追踪</h1><h2 id="6-0-准备工作"><a href="#6-0-准备工作" class="headerlink" title="6.0 准备工作"></a>6.0 准备工作</h2><ol>
+<li><p>把网关中的自定义的断言，过滤器等全部注释   – &#x2F;&#x2F; @Component</p>
+</li>
+<li><p>把网关中的路由的设置注释掉，采用最简单的网关配置来测试  – 使用微服务名来作为请求前缀</p>
+</li>
+<li><p>在商品微服务的根据id查询商品信息的接口中加入休眠代码  – Thread.sleep(5000);</p>
+</li>
+<li><p>在订单微服务中的feign远程调用的注解改为  @FeignClient(“shop-product”)</p>
+<p>并同时修改feign的远程调用的响应时间为10000毫秒，默认是1000毫秒</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-comment"># connectTimeout表示建立连接的超时时间，readTimeout表示响应时间的超时时间</span><br><span class="hljs-attr">feign</span>:<span class="hljs-string"></span><br> <span class="hljs-attr">client</span>:<span class="hljs-string"></span><br>    <span class="hljs-attr">config</span>:<span class="hljs-string"></span><br>       <span class="hljs-attr">default</span>:<span class="hljs-string"></span><br>          <span class="hljs-attr">connect-timeout</span>: <span class="hljs-string">10000</span><br>          <span class="hljs-attr">read-timeout</span>: <span class="hljs-string">10000</span><br></code></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="6-1-链路追踪介绍"><a href="#6-1-链路追踪介绍" class="headerlink" title="6.1 链路追踪介绍"></a><strong>6.1</strong> <strong>链路追踪介绍</strong></h2><p>   在大型系统的微服务化构建中，一个系统被拆分成了许多模块。这些模块负责不同的功能，组合成</p>
+<p>系统，最终可以提供丰富的功能。在这种架构中，一次请求往往需要涉及到多个服务。互联网应用构建在不同的软件模块集上，这些软件模块，有可能是由不同的团队开发、可能使用不同的编程语言来实现、有可能布在了几千台服务器，横跨多个不同的数据中心，也就意味着这种架构形式也会存在一些问题：</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808211317188.png" srcset="/img/loading.gif" lazyload alt="image-20230808211317188"></p>
+<ul>
+<li><p>如何快速发现问题？</p>
+</li>
+<li><p>如何判断故障影响范围？</p>
+</li>
+<li><p>如何梳理服务依赖以及依赖的合理性？</p>
+</li>
+<li><p>如何分析链路性能问题以及实时容量规划？</p>
+<p>分布式链路追踪（Distributed Tracing），就是将一次分布式请求还原成调用链路，进行日志记</p>
+</li>
+</ul>
+<p>录，性能监控，并将一次分布式请求的调用情况集中展示。比如各个服务节点上的耗时、请求具体到达哪台机器上、每个服务节点的请求状态等等。</p>
+<p>常见的链路追踪技术有下面这些：</p>
+<ul>
+<li><p><strong>cat</strong> 由大众点评开源，基于Java开发的实时应用监控平台，包括实时应用监控，业务监控 。 集成</p>
+<p>方案是通过代码埋点的方式来实现监控，比如： 拦截器，过滤器等。 对代码的侵入性很大，集成</p>
+<p>成本较高。风险较大。</p>
+</li>
+<li><p><strong>zipkin</strong> 由Twitter公司开源，开放源代码分布式的跟踪系统，用于收集服务的定时数据，以解决微</p>
+<p>服务架构中的延迟问题，包括：数据的收集、存储、查找和展现。该产品结合spring-cloud-sleuth</p>
+<p>使用较为简单， 集成很方便， 但是功能较简单。</p>
+</li>
+<li><p><strong>pinpoint</strong> Pinpoint是韩国人开源的基于字节码注入的调用链分析，以及应用监控分析工具。特点</p>
+<p>是支持多种插件，UI功能强大，接入端无代码侵入。</p>
+</li>
+<li><p><strong>skywalking</strong></p>
+<p>SkyWalking是本土开源的基于字节码注入的调用链分析，以及应用监控分析工具。特点是支持多</p>
+<p>种插件，UI功能较强，接入端无代码侵入。目前已加入Apache孵化器。</p>
+</li>
+<li><p><strong>Sleuth</strong></p>
+<p>SpringCloud 提供的分布式系统中链路追踪解决方案。</p>
+</li>
+</ul>
+<p><strong>注意：SpringCloud alibaba技术栈中并没有提供自己的链路追踪技术的，我们可以采用Sleuth +Zipkin来做链路追踪解决方案</strong> </p>
+<h2 id="6-2-Sleuth入门"><a href="#6-2-Sleuth入门" class="headerlink" title="6.2 Sleuth入门"></a><strong>6.2 Sleuth</strong>入门</h2><h3 id="6-2-1-Sleuth介绍"><a href="#6-2-1-Sleuth介绍" class="headerlink" title="6.2.1 Sleuth介绍"></a><strong>6.2.1 Sleuth</strong>介绍</h3><p>SpringCloud Sleuth主要功能就是在分布式系统中提供追踪解决方案。它大量借用了Google</p>
+<p>Dapper的设计， 先来了解一下Sleuth中的术语和相关概念。</p>
+<ul>
+<li><p>Trace</p>
+<p>由一组Trace Id相同的Span串联形成一个树状结构。为了实现请求跟踪，当请求到达分布式系统的入口端点时，只需要服务跟踪框架为该请求创建一个唯一的标识（即TraceId），同时在分布式系统内部流转的时候，框架始终保持传递该唯一值，直到整个请求的返回。那么我们就可以使用该唯一标识将所有的请求串联起来，形成一条完整的请求链路。</p>
+</li>
+<li><p>Sp1通过一个唯一标识（SpanId）来标记它的开始、具体过程和结束。通过SpanId的开始和结</p>
+<p>束时间戳，就能统计该span的调用时间，除此之外，我们还可以获取如事件的名称。请求信息等</p>
+<p>元数据。</p>
+</li>
+<li><p>Annotation</p>
+<p>用它记录一段时间内的事件，内部使用的重要注释：</p>
+<p>cs（Client Send）客户端发出请求，开始一个请求</p>
+<p>sr（Server Received）服务端接受到请求开始进行处理， sr－cs &#x3D; 网络延迟（服务调用的时间）</p>
+<p>ss（Server Send）服务端处理完毕准备发送到客户端，ss - sr &#x3D; 服务器上的请求处理时间</p>
+<p>cr（Client Reveived）客户端接受到服务端的响应，请求结束。 cr - sr &#x3D; 请求的总时间</p>
+<h3 id="6-2-2-Sleuth入门"><a href="#6-2-2-Sleuth入门" class="headerlink" title="6.2.2 Sleuth入门"></a><strong>6.2.2 Sleuth</strong>入门</h3></li>
+</ul>
+<p>接下来通过之前的项目案例整合Sleuth，完成入门案例的编写。</p>
+<ol>
+<li>在common中引入Sleuth依赖</li>
+</ol>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!--链路追踪 Sleuth--&gt;</span> <br><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-sleuth<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span> <br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>启动微服务，调用之后，我们可以在控制台观察到sleuth的日志输出</li>
+</ol>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808211505052.png" srcset="/img/loading.gif" lazyload alt="image-20230808211505052"></p>
+<p>   其中 5399d5cb061971bd 是TraceId， 5399d5cb061971bd 是SpanId，依次调用有一个全局的</p>
+<p>TraceId，将调用链路串起来。仔细分析每个微服务的日志，不难看出请求的具体过程。</p>
+<p>   查看日志文件并不是一个很好的方法，当微服务越来越多日志文件也会越来越多，通过Zipkin可以</p>
+<p>将日志聚合，并进行可视化展示和全文检索。</p>
+<h2 id="6-3-Zipkin的集成"><a href="#6-3-Zipkin的集成" class="headerlink" title="6.3 Zipkin的集成"></a><strong>6.3 Zipkin</strong>的集成</h2><h3 id="6-3-1-ZipKin介绍"><a href="#6-3-1-ZipKin介绍" class="headerlink" title="6.3.1 ZipKin介绍"></a><strong>6.3.1 ZipKin</strong>介绍</h3><p>   Zipkin 是 Twitter 的一个开源项目，它基于Google Dapper实现，它致力于收集服务的定时数据，</p>
+<p>以解决微服务架构中的延迟问题，包括数据的<strong>收集、存储、查找和展现</strong>。</p>
+<p>   我们可以使用它来收集各个服务器上请求链路的跟踪数据，并通过它提供的REST API接口来辅助我</p>
+<p>们查询跟踪数据以实现对分布式系统的监控程序，从而及时地发现系统中出现的延迟升高问题并找出系统性能瓶颈的根源。</p>
+<p>   除了面向开发的 API 接口之外，它也提供了方便的UI组件来帮助我们直观的搜索跟踪信息和分析请</p>
+<p>求链路明细，比如：可以查询某段时间内各用户请求的处理时间等。</p>
+<p>Zipkin 提供了可插拔数据存储方式：In-Memory、MySql、Cassandra 以及 Elasticsearch。</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/Snipaste_2023-08-08_21-16-38.png" srcset="/img/loading.gif" lazyload alt="Snipaste_2023-08-08_21-16-38"></p>
+<p>上图展示了 Zipkin 的基础架构，它主要由 4 个核心组件构成：</p>
+<ul>
+<li><p>Collector：收集器组件，它主要用于处理从外部系统发送过来的跟踪信息，将这些信息转换为</p>
+<p>Zipkin内部处理的 Span 格式，以支持后续的存储、分析、展示等功能。</p>
+</li>
+<li><p>Storage：存储组件，它主要对处理收集器接收到的跟踪信息，默认会将这些信息存储在内存中，</p>
+<p>我们也可以修改此存储策略，通过使用其他存储组件将跟踪信息存储到数据库中。</p>
+</li>
+<li><p>RESTful API：API 组件，它主要用来提供外部访问接口。比如给客户端展示跟踪信息，或是外接</p>
+<p>系统访问以实现监控等。</p>
+</li>
+<li><p>Web UI：UI 组件， 基于API组件实现的上层应用。通过UI组件用户可以方便而有直观地查询和分</p>
+<p>析跟踪信息。</p>
+<p>Zipkin分为两端，一个是 Zipkin服务端，一个是 Zipkin客户端，客户端也就是微服务的应用。 客户端会</p>
+</li>
+</ul>
+<p>配置服务端的 URL 地址，一旦发生服务间的调用的时候，会被配置在微服务里面的 Sleuth 的监听器监</p>
+<p>听，并生成相应的 Trace 和 Span 信息发送给服务端。</p>
+<h3 id="6-3-2-ZipKin服务端安装"><a href="#6-3-2-ZipKin服务端安装" class="headerlink" title="6.3.2 ZipKin服务端安装"></a><strong>6.3.2 ZipKin</strong>服务端安装</h3><p>第1步: 下载ZipKin的jar包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">https://search.maven.org/remote_content?g=io.zipkin.java&amp;a=zipkin- <br>server&amp;v=LATEST&amp;c=<span class="hljs-built_in">exec</span> <br></code></pre></td></tr></table></figure>
+
+<p>访问上面的网址，即可得到一个jar包，这就是ZipKin服务端的jar包 </p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808212013900.png" srcset="/img/loading.gif" lazyload alt="image-20230808212013900"></p>
+<p>第2步: 通过命令行，输入下面的命令启动ZipKin Server</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -jar zipkin-server-2.12.9-exec.jar<br></code></pre></td></tr></table></figure>
+
+
+
+<p>第3步：通过浏览器访问访问</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20230808212237260.png" srcset="/img/loading.gif" lazyload alt="image-20230808212237260"></p>
+<h3 id="6-3-3-Zipkin客户端集成"><a href="#6-3-3-Zipkin客户端集成" class="headerlink" title="6.3.3 Zipkin客户端集成"></a><strong>6.3.3 Zipkin</strong>客户端集成</h3><p>ZipKin客户端和Sleuth的集成非常简单，只需要在微服务中添加其依赖和配置即可。</p>
+<p>第1步：在每个微服务上添加依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-zipkin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span> <br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span> <br></code></pre></td></tr></table></figure>
+
+
+
+<p>第2步：添加配置</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-attr">spring:</span> <br>    <span class="hljs-attr">zipkin:</span> <br>       <span class="hljs-attr">base-url:</span> <span class="hljs-string">http://127.0.0.1:9411/</span> <span class="hljs-comment">#zipkin server的请求地址 </span><br>       <span class="hljs-attr">discoveryClientEnabled:</span> <span class="hljs-literal">false</span> <span class="hljs-comment">#让nacos把它当成一个URL，而不要当做服务名 </span><br>    <span class="hljs-attr">sleuth:</span> <br>       <span class="hljs-attr">sampler:</span> <br>          <span class="hljs-attr">probability:</span> <span class="hljs-number">1.0</span> <span class="hljs-comment">#采样的百分比   0.1--1.0</span><br></code></pre></td></tr></table></figure>
+
+
+
+<p>第3步: 访问微服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">http://localhost:7000/shop-order/order/insertOrder/2<br><br>http://localhost:7000/shop-order/order/list<br></code></pre></td></tr></table></figure>
+
+<p>第4步: 访问zipkin的UI界面，观察效果</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20240530173557890.png" srcset="/img/loading.gif" lazyload alt="image-20240530173557890"></p>
+<p>第5步：点击其中一条记录的show，可观察一次访问的详细线路。</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/06Sleuth%26Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA.assets/image-20240530173714147.png" srcset="/img/loading.gif" lazyload alt="image-20240530173714147"></p>
+<h2 id="6-4-ZipKin数据持久化"><a href="#6-4-ZipKin数据持久化" class="headerlink" title="6.4 ZipKin数据持久化"></a><strong>6.4 ZipKin</strong>数据持久化</h2><p>   Zipkin Server默认会将追踪数据信息保存到内存，但这种方式不适合生产环境。Zipkin支持将追踪数据持久化到mysql数据库或elasticsearch中。</p>
+<h3 id="6-4-1-使用mysql实现数据持久化"><a href="#6-4-1-使用mysql实现数据持久化" class="headerlink" title="6.4.1 使用mysql实现数据持久化"></a><strong>6.4.1</strong> <strong>使用</strong>mysql实现数据持久化</h3><p>第1步: 创建mysql数据环境</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><code class="hljs mysql">CREATE TABLE IF NOT EXISTS zipkin_spans (<br> `trace_id_high` BIGINT NOT NULL DEFAULT 0 COMMENT &#x27;If non zero, this means the trace uses 128 bit traceIds instead of 64 bit&#x27;,<br> `trace_id` BIGINT NOT NULL,<br> `id` BIGINT NOT NULL,<br> `name` VARCHAR(255) NOT NULL,<br> `remote_service_name` VARCHAR(255),<br> `parent_id` BIGINT,<br> `debug` BIT(1),<br> `start_ts` BIGINT COMMENT &#x27;Span.timestamp(): epoch micros used for endTs query and to implement TTL&#x27;,<br> `duration` BIGINT COMMENT &#x27;Span.duration(): micros used for minDuration and maxDuration query&#x27;,<br> PRIMARY KEY (`trace_id_high`, `trace_id`, `id`)<br>) ENGINE=InnoDB ROW_FORMAT=COMPRESSED CHARACTER SET=utf8 COLLATE utf8_general_ci;<br> <br>ALTER TABLE zipkin_spans ADD INDEX(`trace_id_high`, `trace_id`) COMMENT &#x27;for getTracesByIds&#x27;;<br>ALTER TABLE zipkin_spans ADD INDEX(`name`) COMMENT &#x27;for getTraces and getSpanNames&#x27;;<br>ALTER TABLE zipkin_spans ADD INDEX(`remote_service_name`) COMMENT &#x27;for getTraces and getRemoteServiceNames&#x27;;<br>ALTER TABLE zipkin_spans ADD INDEX(`start_ts`) COMMENT &#x27;for getTraces ordering and range&#x27;;<br> <br>CREATE TABLE IF NOT EXISTS zipkin_annotations (<br> `trace_id_high` BIGINT NOT NULL DEFAULT 0 COMMENT &#x27;If non zero, this means the trace uses 128 bit traceIds instead of 64 bit&#x27;,<br> `trace_id` BIGINT NOT NULL COMMENT &#x27;coincides with zipkin_spans.trace_id&#x27;,<br> `span_id` BIGINT NOT NULL COMMENT &#x27;coincides with zipkin_spans.id&#x27;,<br> `a_key` VARCHAR(255) NOT NULL COMMENT &#x27;BinaryAnnotation.key or Annotation.value if type == -1&#x27;,<br> `a_value` BLOB COMMENT &#x27;BinaryAnnotation.value(), which must be smaller than 64KB&#x27;,<br> `a_type` INT NOT NULL COMMENT &#x27;BinaryAnnotation.type() or -1 if Annotation&#x27;,<br> `a_timestamp` BIGINT COMMENT &#x27;Used to implement TTL; Annotation.timestamp or zipkin_spans.timestamp&#x27;,<br> `endpoint_ipv4` INT COMMENT &#x27;Null when Binary/Annotation.endpoint is null&#x27;,<br> `endpoint_ipv6` BINARY(16) COMMENT &#x27;Null when Binary/Annotation.endpoint is null, or no IPv6 address&#x27;,<br> `endpoint_port` SMALLINT COMMENT &#x27;Null when Binary/Annotation.endpoint is null&#x27;,<br> `endpoint_service_name` VARCHAR(255) COMMENT &#x27;Null when Binary/Annotation.endpoint is null&#x27;<br>) ENGINE=InnoDB ROW_FORMAT=COMPRESSED CHARACTER SET=utf8 COLLATE utf8_general_ci;<br> <br>ALTER TABLE zipkin_annotations ADD UNIQUE KEY(`trace_id_high`, `trace_id`, `span_id`, `a_key`, `a_timestamp`) COMMENT &#x27;Ignore insert on duplicate&#x27;;<br>ALTER TABLE zipkin_annotations ADD INDEX(`trace_id_high`, `trace_id`, `span_id`) COMMENT &#x27;for joining with zipkin_spans&#x27;;<br>ALTER TABLE zipkin_annotations ADD INDEX(`trace_id_high`, `trace_id`) COMMENT &#x27;for getTraces/ByIds&#x27;;<br>ALTER TABLE zipkin_annotations ADD INDEX(`endpoint_service_name`) COMMENT &#x27;for getTraces and getServiceNames&#x27;;<br>ALTER TABLE zipkin_annotations ADD INDEX(`a_type`) COMMENT &#x27;for getTraces and autocomplete values&#x27;;<br>ALTER TABLE zipkin_annotations ADD INDEX(`a_key`) COMMENT &#x27;for getTraces and autocomplete values&#x27;;<br>ALTER TABLE zipkin_annotations ADD INDEX(`trace_id`, `span_id`, `a_key`) COMMENT &#x27;for dependencies job&#x27;;<br> <br>CREATE TABLE IF NOT EXISTS zipkin_dependencies (<br> `day` DATE NOT NULL,<br> `parent` VARCHAR(255) NOT NULL,<br> `child` VARCHAR(255) NOT NULL,<br> `call_count` BIGINT,<br> `error_count` BIGINT,<br> PRIMARY KEY (`day`, `parent`, `child`)<br>) ENGINE=InnoDB ROW_FORMAT=COMPRESSED CHARACTER SET=utf8 COLLATE utf8_general_ci;<br><br></code></pre></td></tr></table></figure>
+
+<p>第2步: 在启动ZipKin Server的时候,指定数据保存的mysql的信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -jar zipkin-server-2.24.3-exec.jar --STORAGE_TYPE=mysql --MYSQL_HOST=127.0.0.1 --MYSQL_TCP_PORT=3306 --MYSQL_DB=zipkindb --MYSQL_USER=root --MYSQL_PASS=root<br></code></pre></td></tr></table></figure>
+
+<p><strong>注意：</strong></p>
+<p>如果连接的是mysql8.0以上版本的数据库，则原有的root密码的加密方式是caching_sha2_password，这种加密方式与zipkin连接数据库的加密方式不同（mysql_native_password）则会报 连接mysql密码错误。</p>
+<p>解决：</p>
+<ol>
+<li><p>直接连接mysql8.0以下的数据库来实现数据持久化</p>
+</li>
+<li><p>在mysql8.0以上的数据库中新创建一个用户，并把该用户的密码的加密方式改为mysql_native_password即可</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs sql"><span class="hljs-comment">-- 查看用户的密码加密方式</span><br>use mysql<br><span class="hljs-keyword">select</span> <span class="hljs-keyword">user</span>,host,plugin <span class="hljs-keyword">from</span> <span class="hljs-keyword">user</span>;<br><span class="hljs-comment">-- 1.创建新用户</span><br><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">USER</span> <span class="hljs-string">&#x27;lisi&#x27;</span>@<span class="hljs-string">&#x27;%&#x27;</span> IDENTIFIED <span class="hljs-keyword">WITH</span> mysql_native_password <span class="hljs-keyword">BY</span> <span class="hljs-string">&#x27;lisi&#x27;</span>;<br><span class="hljs-comment">-- 2.为该用户赋予权限</span><br><span class="hljs-keyword">GRANT</span> <span class="hljs-keyword">all</span> PRIVILEGES <span class="hljs-keyword">on</span> <span class="hljs-operator">*</span>.<span class="hljs-operator">*</span> <span class="hljs-keyword">TO</span> <span class="hljs-string">&#x27;lisi&#x27;</span>@<span class="hljs-string">&#x27;%&#x27;</span>;<br><span class="hljs-comment">-- 3.刷新权限</span><br>flush PRIVILEGES;<br><span class="hljs-comment">-- 4.使用</span><br>java <span class="hljs-operator">-</span>jar zipkin<span class="hljs-operator">-</span>server<span class="hljs-number">-2.24</span><span class="hljs-number">.3</span><span class="hljs-operator">-</span>exec.jar <span class="hljs-comment">--STORAGE_TYPE=mysql --MYSQL_HOST=127.0.0.1 --MYSQL_TCP_PORT=3306 --MYSQL_DB=zipkindb --MYSQL_USER=lisi --MYSQL_PASS=lisi</span><br></code></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="6-4-2-使用elasticsearch实现数据持久化"><a href="#6-4-2-使用elasticsearch实现数据持久化" class="headerlink" title="6.4.2 使用elasticsearch实现数据持久化"></a><strong>6.4.2</strong> <strong>使用</strong>elasticsearch实现数据持久化</h3><p>第1步: 下载elasticsearch</p>
+<p>下载地址：<a target="_blank" rel="noopener" href="https://www.elastic.co/cn/downloads/past-releases/elasticsearch-6-8-4">https://www.elastic.co/cn/downloads/past-releases/elasticsearch-6-8-4</a></p>
+<p>   在docker中创建es对象</p>
+<p>第2步: 启动elasticsearch</p>
+<p>第3步: 在启动ZipKin Server的时候，指定数据保存的elasticsearch的信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">java -jar zipkin-server-2.24.3-exec.jar --STORAGE_TYPE=elasticsearch --ES_HOSTS=http://39.104.76.191:9200<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="category-chain-item">微服务</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/%E4%BB%8B%E7%BB%8D/" class="category-chain-item">介绍</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Sleuth&amp;Zipkin链路追踪</div>
+      <div>http://example.com/2025/01/31/Sleuth-Zipkin链路追踪/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>jj_hou</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年1月31日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/01/31/Nacos-Config%E6%9C%8D%E5%8A%A1%E9%85%8D%E7%BD%AE/" title="Nacos Config服务配置">
+                        <span class="hidden-mobile">Nacos Config服务配置</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a>！ 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

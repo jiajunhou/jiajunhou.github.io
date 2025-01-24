@@ -1,0 +1,904 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="jj_hou">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="三.Nacos Discovery服务治理3.1 服务治理介绍先来思考一个问题 通过上一章的操作，我们已经可以实现微服务之间的调用。但是我们把服务提供者的网络地址 （ip，端口）等硬编码到了代码中，这种做法存在许多问题：  一旦服务提供者地址变化，就需要手工修改代码  一旦是多个服务提供者，无法实现负载均衡功能  一旦服务变得越来越多，人工维护调用关系困难   那么应该怎么解决呢， 这时候就需要通">
+<meta property="og:type" content="article">
+<meta property="og:title" content="服务治理与调用">
+<meta property="og:url" content="http://example.com/2024/01/22/%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="三.Nacos Discovery服务治理3.1 服务治理介绍先来思考一个问题 通过上一章的操作，我们已经可以实现微服务之间的调用。但是我们把服务提供者的网络地址 （ip，端口）等硬编码到了代码中，这种做法存在许多问题：  一旦服务提供者地址变化，就需要手工修改代码  一旦是多个服务提供者，无法实现负载均衡功能  一旦服务变得越来越多，人工维护调用关系困难   那么应该怎么解决呢， 这时候就需要通">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210605154303082.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210605154906035.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420142518003.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420142830522.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420143249754.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20221013155012725.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420143611285.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20240522230607641.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20240522230623028.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20220927163421829.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420143720274.png">
+<meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20220302170858666.png">
+<meta property="article:published_time" content="2024-01-22T10:28:03.000Z">
+<meta property="article:modified_time" content="2025-01-24T14:27:35.033Z">
+<meta property="article:author" content="jj_hou">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210605154303082.png">
+  
+  
+  
+  <title>服务治理与调用 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":65,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>JJ_HOU_nb_666</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="服务治理与调用"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-01-22 18:28" pubdate>
+          2024年1月22日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">服务治理与调用</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="三-Nacos-Discovery服务治理"><a href="#三-Nacos-Discovery服务治理" class="headerlink" title="三.Nacos Discovery服务治理"></a>三.<strong>Nacos Discovery</strong>服务治理</h2><h3 id="3-1-服务治理介绍"><a href="#3-1-服务治理介绍" class="headerlink" title="3.1 服务治理介绍"></a><strong>3.1</strong> <strong>服务治理介绍</strong></h3><p><strong>先来思考一个问题</strong></p>
+<p>通过上一章的操作，我们已经可以实现微服务之间的调用。但是我们把服务提供者的网络地址</p>
+<p>（ip，端口）等硬编码到了代码中，这种做法存在许多问题：</p>
+<ul>
+<li><p>一旦服务提供者地址变化，就需要手工修改代码</p>
+</li>
+<li><p>一旦是多个服务提供者，无法实现负载均衡功能</p>
+</li>
+<li><p>一旦服务变得越来越多，人工维护调用关系困难</p>
+</li>
+</ul>
+<p>那么应该怎么解决呢， 这时候就需要通过注册中心动态的实现<strong>服务治理</strong>。</p>
+<p><strong>什么是服务治理</strong></p>
+<p>服务治理是微服务架构中最核心最基本的模块。用于实现各个微服务的<strong>自动化注册与发现</strong>。</p>
+<ul>
+<li><p><strong>服务注册：</strong>在服务治理框架中，都会构建一个注册中心，每个服务单元向注册中心登记自己提供服务的详细信息。并在注册中心形成一张服务的清单，服务注册中心需要以<strong>心跳</strong>的方式去监测清单中的服务是否可用，如果不可用，需要在服务清单中<strong>剔除</strong>不可用的服务。</p>
+</li>
+<li><p><strong>服务发现：</strong>服务调用方向服务注册中心咨询服务，并获取所有服务的实例清单，实现对具体服务实例的访问。</p>
+</li>
+</ul>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210605154303082.png" srcset="/img/loading.gif" lazyload alt="image-20210605154303082"></p>
+<p>通过上面的调用图会发现，除了微服务，还有一个组件是<strong>服务注册中心</strong>，它是微服务架构非常重要</p>
+<p>的一个组件，在微服务架构里主要起到了协调者的一个作用。注册中心一般包含如下几个功能：</p>
+<ol>
+<li>服务发现：</li>
+</ol>
+<ul>
+<li><p>服务注册：保存服务提供者和服务调用者的信息</p>
+</li>
+<li><p>服务订阅：服务调用者订阅服务提供者的信息，注册中心向订阅者推送提供者的信息</p>
+</li>
+</ul>
+<ol start="2">
+<li>服务配置：</li>
+</ol>
+<ul>
+<li><p>配置订阅：服务提供者和服务调用者订阅微服务相关的配置</p>
+</li>
+<li><p>配置下发：主动将配置推送给服务提供者和服务调用者</p>
+</li>
+</ul>
+<ol start="3">
+<li>服务健康检测</li>
+</ol>
+<ul>
+<li>检测服务提供者的健康情况，如果发现异常，执行服务剔除</li>
+</ul>
+<p><strong>常见的注册中心</strong></p>
+<ul>
+<li><strong>Zookeeper</strong></li>
+</ul>
+<p>zookeeper是一个分布式服务框架，是Apache Hadoop 的一个子项目，它主要是用来解决分布式</p>
+<p>应用中经常遇到的一些数据管理问题，如：统一命名服务、状态同步服务、集群管理、分布式应用</p>
+<p>配置项的管理等。</p>
+<ul>
+<li><strong>Eureka</strong></li>
+</ul>
+<p>Eureka是Springcloud Netflflix中的重要组件，主要作用就是做服务注册和发现。但是现在已经闭</p>
+<p>源</p>
+<ul>
+<li><strong>Nacos</strong></li>
+</ul>
+<p>Nacos是一个更易于构建云原生应用的动态服务发现、配置管理和服务管理平台。它是 Spring</p>
+<p>Cloud Alibaba 组件之一，负责服务注册发现和服务配置，可以这样认为nacos&#x3D;eureka+config。</p>
+<h3 id="3-2-nacos简介"><a href="#3-2-nacos简介" class="headerlink" title="3.2 nacos简介"></a><strong>3.2 nacos</strong>简介</h3><p>   Nacos 致力于帮助您发现、配置和管理微服务。Nacos 提供了一组简单易用的特性集，帮助您快速实现<strong>动态服务发现</strong>、服务配置、服务元数据及流量管理。</p>
+<p>从上面的介绍就可以看出，<strong>nacos</strong>的作用就是一个注册中心，用来管理注册上来的各个微服务。</p>
+<h3 id="3-3-nacos实战入门"><a href="#3-3-nacos实战入门" class="headerlink" title="3.3 nacos实战入门"></a><strong>3.3 nacos</strong>实战入门</h3><p>接下来，我们就在现有的环境中加入nacos，并将我们的两个微服务注册上去。</p>
+<h4 id="3-3-1-搭建nacos环境"><a href="#3-3-1-搭建nacos环境" class="headerlink" title="3.3.1 搭建nacos环境"></a><strong>3.3.1</strong> <strong>搭建</strong>nacos环境</h4><p>第1步: 安装nacos</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">下载地址: https://github.com/alibaba/nacos/releases <br>下载zip格式的安装包，然后进行解压缩操作<br>注意：尽量不要出现中文路径 <br></code></pre></td></tr></table></figure>
+
+<p>第2步: 启动nacos</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#切换目录 </span><br><span class="hljs-built_in">cd</span> nacos/bin <br><span class="hljs-comment">#命令启动 </span><br>startup.cmd -m standalone<br></code></pre></td></tr></table></figure>
+
+<p>或者</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">进入到bin的文件中<br>找到startup.cmd 右键修改<br>把其中的<span class="hljs-built_in">set</span> MODE=<span class="hljs-string">&quot;cluster&quot;</span>  <br>改为 <span class="hljs-built_in">set</span> MODE=<span class="hljs-string">&quot;standalone&quot;</span><br>双击启动即可<br></code></pre></td></tr></table></figure>
+
+<p>或者</p>
+<p>在文件中创建一个start.bat启动文件，把启动命令放入其中即可</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">startup.cmd -m standalone<br></code></pre></td></tr></table></figure>
+
+
+
+<p>第3步: 访问nacos</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210605154906035.png" srcset="/img/loading.gif" lazyload alt="image-20210605154906035"></p>
+<p>打开浏览器输入<a target="_blank" rel="noopener" href="http://localhost:8848/nacos%EF%BC%8C%E5%8D%B3%E5%8F%AF%E8%AE%BF%E9%97%AE%E6%9C%8D%E5%8A%A1%EF%BC%8C">http://localhost:8848/nacos，即可访问服务，</a> 默认密码是nacos&#x2F;nacos</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420142518003.png" srcset="/img/loading.gif" lazyload alt="image-20210420142518003"></p>
+<h4 id="3-3-2-将商品微服务注册到nacos"><a href="#3-3-2-将商品微服务注册到nacos" class="headerlink" title="3.3.2 将商品微服务注册到nacos"></a><strong>3.3.2</strong> <strong>将商品微服务注册到</strong>nacos</h4><p>接下来开始修改 shop-product 模块的代码， 将其注册到nacos服务上</p>
+<p>1 在pom.xml中添加nacos的依赖【也可以直接在shop-common中一次性引入】</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!--nacos客户端--&gt;</span> <br><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.alibaba.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-alibaba-nacos-discovery<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span> <br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>2 在主类上添加**@EnableDiscoveryClient**注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@SpringBootApplication</span> <br><span class="hljs-meta">@EnableDiscoveryClient</span> <br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ProductApplication</span>&#123;<br>    ....<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>3 在application.yaml中添加nacos服务的地址</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-attr">spring</span>:<span class="hljs-string"></span><br>    <span class="hljs-attr">cloud</span>:<span class="hljs-string"></span><br>       <span class="hljs-attr">nacos</span>:<span class="hljs-string"></span><br>          <span class="hljs-attr">discovery</span>:<span class="hljs-string"></span><br>             <span class="hljs-attr">server-addr</span>: <span class="hljs-string">127.0.0.1:8848</span><br></code></pre></td></tr></table></figure>
+
+<p>4 启动服务， 观察nacos的控制面板中是否有注册上来的商品微服务</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420142830522.png" srcset="/img/loading.gif" lazyload alt="image-20210420142830522"></p>
+<h4 id="3-3-3-将订单微服务注册到nacos"><a href="#3-3-3-将订单微服务注册到nacos" class="headerlink" title="3.3.3 将订单微服务注册到nacos"></a><strong>3.3.3</strong> <strong>将订单微服务注册到</strong>nacos</h4><p>接下来开始修改 shop-order 模块的代码， 将其注册到nacos服务上</p>
+<p>1 在pom.xml中添加nacos的依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!--nacos客户端--&gt;</span> <br><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.alibaba.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-alibaba-nacos-discovery<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span> <br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>2 在主类上添加**@EnableDiscoveryClient**注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@SpringBootApplication</span> <br><span class="hljs-meta">@EnableDiscoveryClient</span> <br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderApplication</span>&#123;<br>    ....<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>3 在application.properties中添加nacos服务的地址</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-attr">spring</span>:<span class="hljs-string"></span><br>    <span class="hljs-attr">cloud</span>:<span class="hljs-string"></span><br>       <span class="hljs-attr">nacos</span>:<span class="hljs-string"></span><br>          <span class="hljs-attr">discovery</span>:<span class="hljs-string"></span><br>             <span class="hljs-attr">server-addr</span>: <span class="hljs-string">127.0.0.1:8848</span><br></code></pre></td></tr></table></figure>
+
+<p>4 修改OrderController， 实现微服务调用</p>
+<p>DiscoveryClient是专门负责服务注册和发现的，我们可以通过它获取到注册到注册中心的所有服务</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> org.springframework.cloud.client.discovery.DiscoveryClient;<br><br><br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> DiscoveryClient discoveryClient;<br>    <br>    <span class="hljs-meta">@RequestMapping(&quot;/order/insertOrder/&#123;pid&#125;&quot;)</span><br>    <span class="hljs-keyword">public</span> Object <span class="hljs-title function_">findProduct</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable(&quot;pid&quot;)</span> Integer pid)</span>&#123;<br>        <span class="hljs-comment">// 使用nacos方式来动态的获取要访问的服务器</span><br>        <span class="hljs-type">ServiceInstance</span> <span class="hljs-variable">shop_product</span> <span class="hljs-operator">=</span> discoveryClient.getInstances(<span class="hljs-string">&quot;shop-product&quot;</span>).get(<span class="hljs-number">0</span>);<br><br>        <span class="hljs-comment">// 模仿实现订单的添加</span><br>        <span class="hljs-comment">// 使用RestTemplate来实现调用商品微服务的接口</span><br>        <span class="hljs-type">Product</span> <span class="hljs-variable">product</span> <span class="hljs-operator">=</span> restTemplate.getForObject(<span class="hljs-string">&quot;http://&quot;</span>+shop_product.getHost()+<span class="hljs-string">&quot;:&quot;</span>+shop_product.getPort()+<span class="hljs-string">&quot;/findProduct/&quot;</span> + pid, Product.class);<br>        System.out.println(product.toString());<br>        <span class="hljs-type">Orders</span> <span class="hljs-variable">order</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Orders</span>();<br>        order.setUid(<span class="hljs-number">1</span>);<br>        order.setUsername(<span class="hljs-string">&quot;admin&quot;</span>);<br>        order.setPid(product.getId());<br>        order.setPname(product.getPname());<br>        order.setPprice(product.getPprice());<br>        order.setNumber(<span class="hljs-number">1</span>);<br>        <span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> orderService.insertOrder(order);<br>        <span class="hljs-keyword">return</span> i;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>5 启动服务， 观察nacos的控制面板中是否有注册上来的订单微服务，然后通过访问消费者服务验证调用是否成功</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420143249754.png" srcset="/img/loading.gif" lazyload alt="image-20210420143249754"></p>
+<h3 id="3-4-实现服务调用的负载均衡"><a href="#3-4-实现服务调用的负载均衡" class="headerlink" title="3.4 实现服务调用的负载均衡"></a><strong>3.4</strong> <strong>实现服务调用的负载均衡</strong></h3><h4 id="3-4-0-背景铺垫"><a href="#3-4-0-背景铺垫" class="headerlink" title="3.4.0 背景铺垫"></a>3.4.0 背景铺垫</h4><p>微服务项目有一个重要的功能：可以很容易<strong>动态扩缩容</strong></p>
+<p>这里我们不谈容器技术(docker&#x2F;k8s这些)，传统的扩缩容简单理解就是服务集群。</p>
+<p><strong>扩：</strong>特定时期(比如促销，天灾人祸)一个微服务可能容易挂掉(撑不住&#x2F;宕机)，那么多开几个就行，此为扩。</p>
+<p><strong>缩：</strong>特定时期过后，多开的微服务可以适当关掉多余的，此为缩。</p>
+<p>这里考虑扩的问题，以订单与商品服务为例子，</p>
+<p>设想一种场景：如果某天公司要促销，单一的订单服务，商品服务不一定能撑得住，该怎么扩容。</p>
+<p>扩容常用的手段就是集群，如下：</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20221013155012725.png" srcset="/img/loading.gif" lazyload alt="image-20221013155012725"></p>
+<p>集群存在一个很大问题，客户端发起的请求让哪个微服务处理？解决方案：<strong>负载均衡服务器</strong></p>
+<h4 id="3-4-1-什么是负载均衡"><a href="#3-4-1-什么是负载均衡" class="headerlink" title="3.4.1 什么是负载均衡"></a><strong>3.4.1</strong> <strong>什么是负载均衡</strong></h4><p>通俗的讲， 负载均衡就是将负载（工作任务，访问请求）进行分摊到多个操作单元（服务器,组件）上进行执行。</p>
+<p>根据负载均衡发生位置的不同,一般分为<strong>服务端负载均衡</strong>和<strong>客户端负载均衡</strong>。</p>
+<p>服务端负载均衡指的是发生在服务提供者一方,比如常见的nginx负载均衡</p>
+<p>而客户端负载均衡指的是发生在服务请求的一方，也就是在发送请求之前已经选好了由哪个实例处理请求</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420143611285.png" srcset="/img/loading.gif" lazyload alt="image-20210420143611285"></p>
+<p>服务端负载均衡指的是发生在服务提供者一方,比如常见的Nginx负载均衡</p>
+<p><strong>服务端负载均衡</strong></p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20240522230607641.png" srcset="/img/loading.gif" lazyload alt="image-20240522230607641"></p>
+<p>而客户端负载均衡指的是发生在服务请求的一方，也就是在发送请求之前已经选好了由哪个实例处理请求</p>
+<p><strong>客户端负载均衡</strong></p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20240522230623028.png" srcset="/img/loading.gif" lazyload alt="image-20240522230623028"></p>
+<p>我们在微服务调用关系中一般会选择客户端负载均衡，也就是在服务调用的一方来决定服务由哪个提供者执行。</p>
+<h4 id="3-4-2-自定义实现负载均衡"><a href="#3-4-2-自定义实现负载均衡" class="headerlink" title="3.4.2 自定义实现负载均衡"></a><strong>3.4.2</strong> <strong>自定义实现负载均衡</strong></h4><p>1 通过idea再启动一个 shop-product 微服务，设置其端口为8082</p>
+<p>   选择 + 添加一个新的springboot启动项，并简单配置服务下：</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20220927163421829.png" srcset="/img/loading.gif" lazyload alt="image-20220927163421829"></p>
+<p>2 通过nacos查看微服务的启动情况</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20210420143720274.png" srcset="/img/loading.gif" lazyload alt="image-20210420143720274"></p>
+<p>3 修改 shop-order 的代码，实现负载均衡</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@RestController</span><br><span class="hljs-meta">@Slf4j</span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span> &#123;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> RestTemplate restTemplate;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> OrderService orderService;<br>    <span class="hljs-meta">@Autowired</span><br>    <span class="hljs-keyword">private</span> DiscoveryClient discoveryClient;<br>    <br>    <span class="hljs-meta">@RequestMapping(&quot;/order/insertOrder/&#123;pid&#125;&quot;)</span><br>    <span class="hljs-keyword">public</span> Object <span class="hljs-title function_">findProduct</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable(&quot;pid&quot;)</span> Integer pid)</span>&#123;<br>        <span class="hljs-comment">// 使用nacos方式来动态的获取要访问的服务器</span><br>        List&lt;ServiceInstance&gt; instances = discoveryClient<br>            .getInstances(<span class="hljs-string">&quot;shop- product&quot;</span>);<br>        <span class="hljs-type">int</span> <span class="hljs-variable">index</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Random</span>().nextInt(instances.size()); <br>        <span class="hljs-type">ServiceInstance</span> <span class="hljs-variable">serviceInstance</span> <span class="hljs-operator">=</span> instances.get(index); <br>        <span class="hljs-type">String</span> <span class="hljs-variable">url</span> <span class="hljs-operator">=</span> serviceInstance.getHost() + <span class="hljs-string">&quot;:&quot;</span> + serviceInstance.getPort();            log.info(<span class="hljs-string">&quot;&gt;&gt;从nacos中获取到的微服务地址为:&quot;</span> + url); <br>        <span class="hljs-comment">//通过restTemplate调用商品微服务 </span><br>        <span class="hljs-type">Product</span> <span class="hljs-variable">product</span> <span class="hljs-operator">=</span> restTemplate.<br>            getForObject(<span class="hljs-string">&quot;http://&quot;</span> + url + <span class="hljs-string">&quot;/product/&quot;</span> + pid, Product.class);<br>        <br>        System.out.println(product.toString());<br>        <span class="hljs-type">Orders</span> <span class="hljs-variable">order</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Orders</span>();<br>        order.setUid(<span class="hljs-number">1</span>);<br>        order.setUsername(<span class="hljs-string">&quot;admin&quot;</span>);<br>        order.setPid(product.getId());<br>        order.setPname(product.getPname());<br>        order.setPprice(product.getPprice());<br>        order.setNumber(<span class="hljs-number">1</span>);<br>        <span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> orderService.insertOrder(order);<br>        <span class="hljs-keyword">return</span> i;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>第3步：启动两个服务提供者和一个服务消费者，多访问几次消费者测试效果</p>
+<h4 id="3-4-3-基于Ribbon实现负载均衡"><a href="#3-4-3-基于Ribbon实现负载均衡" class="headerlink" title="3.4.3 基于Ribbon实现负载均衡"></a><strong>3.4.3</strong> <strong>基于</strong>Ribbon实现负载均衡</h4><p><strong>Ribbon</strong>是<strong>Spring Cloud</strong>的一个组件， 它可以让我们使用一个注解就能轻松的搞定负载均衡</p>
+<p><strong>总结</strong>：在使用spingcloud的微服务的时候，要记住不能使用下划线，用横线去代替。</p>
+<p>第1步：在RestTemplate 的生成方法上添加@LoadBalanced注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@Bean</span> <br><span class="hljs-meta">@LoadBalanced</span> <br><span class="hljs-keyword">public</span> RestTemplate <span class="hljs-title function_">restTemplate</span><span class="hljs-params">()</span> &#123; <br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RestTemplate</span>(); <br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>第2步：修改服务调用的方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@RestController</span> <br><span class="hljs-meta">@Slf4j</span> <br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span> &#123; <br>    <span class="hljs-meta">@Autowired</span> <br>    <span class="hljs-keyword">private</span> RestTemplate restTemplate; <br>    <span class="hljs-meta">@Autowired</span> <br>    <span class="hljs-keyword">private</span> OrderService orderService; <br>    <br>   <span class="hljs-comment">//准备买1件商品</span><br>    <span class="hljs-meta">@RequestMapping(&quot;/order/insertOrder/&#123;pid&#125;&quot;)</span><br>    <span class="hljs-keyword">public</span> Object <span class="hljs-title function_">order</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable(&quot;pid&quot;)</span> Integer pid)</span> &#123;<br>        log.info(<span class="hljs-string">&quot;&gt;&gt;客户下单，这时候要调用商品微服务查询商品信息&quot;</span>);<br>        <span class="hljs-comment">//直接使用微服务名字， 从nacos中获取服务地址</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">url</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;shop-product&quot;</span>;<br>        <span class="hljs-comment">//通过restTemplate调用商品微服务</span><br>        <span class="hljs-type">Product</span> <span class="hljs-variable">product</span> <span class="hljs-operator">=</span> restTemplate<br>                .getForObject( <span class="hljs-string">&quot;http://&quot;</span> + url + <span class="hljs-string">&quot;/product/findProduct/&quot;</span> + pid, Product.class);<br><br>        log.info(<span class="hljs-string">&quot;&gt;&gt;商品信息，查询结果:&quot;</span> + JSON.toJSONString(product));<br>        <span class="hljs-type">Orders</span> <span class="hljs-variable">order</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Orders</span>();<br>        order.setUid(<span class="hljs-number">1</span>);<br>        order.setUsername(<span class="hljs-string">&quot;admin&quot;</span>);<br>        order.setPid(product.getId());<br>        order.setPname(product.getPname());<br>        order.setPprice(product.getPprice());<br>        order.setNumber(<span class="hljs-number">1</span>);<br>        orderService.insertOrder(order);<br>        <span class="hljs-keyword">return</span> order;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p><strong>Ribbon</strong>支持的负载均衡策略</p>
+<p>Ribbon内置了多种负载均衡策略,内部负载均衡的顶级接口为com.netflix.loadbalancer.IRule , 具体的负载策略如下图所示:</p>
+<table>
+<thead>
+<tr>
+<th><strong>策略名</strong></th>
+<th><strong>策略描述</strong></th>
+<th><strong>实现说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BestAvailableRule</td>
+<td>选择一个最小的并发请求的server</td>
+<td>逐个考察Server，如果Server被tripped了，则忽略，在选择其中ActiveRequestsCount最小的server</td>
+</tr>
+<tr>
+<td>AvailabilityFilteringRule</td>
+<td>过滤掉那些因为一直连接失败的被标记为circuit tripped的后端server，并过滤掉那些高并发的的后端server（activeconnections 超过配置的阈值）</td>
+<td>使用一个AvailabilityPredicate来包含过滤server的逻辑，其实就就是检查status里记录的各个server的运行状态</td>
+</tr>
+<tr>
+<td>WeightedResponseTimeRule</td>
+<td>根据相应时间分配一个weight，相应时间越长，weight越小，被选中的可能性越低。</td>
+<td>一个后台线程定期的从status里面读取评价响应时间，为每个server计算一个weight。Weight的计算也比较简单responsetime 减去每个server自己平均的responsetime是server的权重。当刚开始运行，没有形成statas时，使用roubine策略选择server。</td>
+</tr>
+<tr>
+<td>RetryRule</td>
+<td>对选定的负载均衡策略机上重试机制。</td>
+<td>在一个配置时间段内当选择server不成功，则一直尝试使用subRule的方式选择一个可用的server</td>
+</tr>
+<tr>
+<td>RoundRobinRule</td>
+<td>轮询方式轮询选择server</td>
+<td>轮询index，选择index对应位置的server</td>
+</tr>
+<tr>
+<td>RandomRule</td>
+<td>随机选择一个server</td>
+<td>在index上随机，选择index对应位置的server</td>
+</tr>
+<tr>
+<td>ZoneAvoidanceRule</td>
+<td>复合判断server所在区域的性能和server的可用性选择server</td>
+<td>使用ZoneAvoidancePredicate和AvailabilityPredicate来判断是否选择某个server，前一个判断判定一个zone的运行性能是否可用，剔除不可用的zone（的所有server），AvailabilityPredicate用于过滤掉连接数过多的Server。</td>
+</tr>
+</tbody></table>
+<p>我们可以通过修改配置来调整Ribbon的负载均衡策略，具体代码如下</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-comment"># 调用的提供者的名称</span><br><span class="hljs-attr">shop-product</span>:<span class="hljs-string"></span><br>    <span class="hljs-attr">ribbon</span>:<span class="hljs-string"></span><br>       <span class="hljs-attr">NFLoadBalancerRuleClassName</span>: <span class="hljs-string">com.netflix.loadbalancer.RandomRule</span><br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-5-基于Feign实现服务调用"><a href="#3-5-基于Feign实现服务调用" class="headerlink" title="3.5 基于Feign实现服务调用"></a><strong>3.5</strong> <strong>基于</strong>Feign实现服务调用</h3><h4 id="3-5-1-什么是Feign"><a href="#3-5-1-什么是Feign" class="headerlink" title="3.5.1 什么是Feign"></a><strong>3.5.1</strong> <strong>什么是</strong>Feign</h4><p>Feign是Spring Cloud提供的一个声明式的伪Http客户端， 它使得调用远程服务就像调用本地服务</p>
+<p>一样简单， 只需要创建一个接口并添加一个注解即可。</p>
+<p>Nacos很好的兼容了Feign， Feign默认集成了 Ribbon， 所以在Nacos下使用Fegin默认就实现了负载均衡的效果。</p>
+<h4 id="3-5-2-Feign的使用"><a href="#3-5-2-Feign的使用" class="headerlink" title="3.5.2 Feign的使用"></a><strong>3.5.2 Feign</strong>的使用</h4><p>1 加入Fegin的依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-comment">&lt;!--fegin组件--&gt;</span> <br><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span> <br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-openfeign<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span> <br><span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>2 在主类上添加Fegin的注解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@SpringBootApplication</span> <br><span class="hljs-meta">@EnableDiscoveryClient</span> <br><span class="hljs-meta">@EnableFeignClients</span>    <span class="hljs-comment">//开启Fegin </span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderApplication</span> &#123;&#125;<br></code></pre></td></tr></table></figure>
+
+<p>3 创建一个service， 并使用Fegin实现微服务调用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> cn.hs.pojo.Product;<br><span class="hljs-keyword">import</span> org.springframework.cloud.openfeign.FeignClient;<br><span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.GetMapping;<br><span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PathVariable;<br><br><span class="hljs-meta">@FeignClient(&quot;shop-product&quot;)</span>   <span class="hljs-comment">//声明调用的提供者的name </span><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">ProductService</span> &#123;<br>    <span class="hljs-comment">//指定调用提供者的哪个方法 </span><br>    <span class="hljs-comment">//@FeignClient+@GetMapping 就是一个完整的请求路径 http://service- product/product/&#123;pid&#125;</span><br>    <span class="hljs-meta">@GetMapping(value = &quot;/product/findProduct/&#123;pid&#125;&quot;)</span><br>    Product <span class="hljs-title function_">findByPid</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable(&quot;pid&quot;)</span> Integer pid)</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>4 修改controller代码，并启动验证</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@RestController</span> <br><span class="hljs-meta">@Slf4j</span> <br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">OrderController</span> &#123; <br>    <span class="hljs-meta">@Autowired</span> <br>    <span class="hljs-keyword">private</span> OrderService orderService;<br>    <span class="hljs-meta">@Autowired</span> <br>    <span class="hljs-keyword">private</span> ProductService productService;<br>    <span class="hljs-comment">//准备买1件商品 </span><br>    <span class="hljs-meta">@RequestMapping(&quot;/order/insertOrder/&#123;pid&#125;&quot;)</span><br>    <span class="hljs-keyword">public</span> Order <span class="hljs-title function_">order</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable(&quot;pid&quot;)</span> Integer pid)</span> &#123; <br>        log.info(<span class="hljs-string">&quot;&gt;&gt;客户下单,这时候要调用商品微服务查询商品信息&quot;</span>); <span class="hljs-comment">//通过fegin调用商品微服务</span><br>        <span class="hljs-type">Product</span> <span class="hljs-variable">product</span> <span class="hljs-operator">=</span> productService.findByPid(pid);<br>        log.info(<span class="hljs-string">&quot;&gt;&gt;商品信息,查询结果:&quot;</span> + JSON.toJSONString(product)); <br>        <span class="hljs-type">Order</span> <span class="hljs-variable">order</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Order</span>(); <br>        order.setUid(<span class="hljs-number">1</span>); <br>        order.setUsername(<span class="hljs-string">&quot;测试用户&quot;</span>); <br>        order.setPid(product.getId()); <br>        order.setPname(product.getPname()); <br>        order.setPprice(product.getPprice()); <br>        order.setNumber(<span class="hljs-number">1</span>); <br>        orderService.insertOrder(order); <br>        <span class="hljs-keyword">return</span> order;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>5 重启order微服务,查看效果</p>
+<p><img src="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/03%E6%9C%8D%E5%8A%A1%E6%B2%BB%E7%90%86%E4%B8%8E%E8%B0%83%E7%94%A8.assets/image-20220302170858666.png" srcset="/img/loading.gif" lazyload alt="image-20220302170858666"></p>
+<p><strong>Fegin接口使用主要点：</strong></p>
+<ol>
+<li>@FeignClient 中name为服务提供者在nacos上注册的服务名， 否则报错</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">Load balancer does not have available server <span class="hljs-keyword">for</span> client:xxxx-service<br></code></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>@GetMapping(“&#x2F;products&#x2F;{pid}”) 指定接口路径，必须跟服务提供者提供接口url一样，否则报错</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">feign.FeignException$NotFound: [<span class="hljs-number">404</span>] during [GET] to [http:<span class="hljs-comment">//xxx-service/xxx] </span><br></code></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>定义接口参数：如果使用了参数路径方式访问，需要使用@PathVariable(“pid”) 明确指定路径参数，否则报错</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">feign.FeignException$NotFound: [<span class="hljs-number">404</span>] during [GET] to [http:<span class="hljs-comment">//xxx-service/xxx] </span><br></code></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>定义接口参数：如果使用普通方式访问，参数需要使用@RequestParam标记，否则报错</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">feign.FeignException$MethodNotAllowed: [<span class="hljs-number">405</span>] during [GET] to [http:<span class="hljs-comment">//xxxx-service/xxxx?xxx=1]</span><br></code></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>定义接口参数：如果是对象参数，参数需要使用@RequestBody标记（注意fegin接口，controler接口都要），否则报错</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">参数无法获取<br></code></pre></td></tr></table></figure>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="category-chain-item">微服务</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/%E4%BD%BF%E7%94%A8/" class="category-chain-item">使用</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>服务治理与调用</div>
+      <div>http://example.com/2024/01/22/服务治理与调用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>jj_hou</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年1月22日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/01/27/Sentinel%E6%9C%8D%E5%8A%A1%E5%AE%B9%E9%94%99/" title="Sentinel服务容错">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Sentinel服务容错</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/01/17/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" title="微服务的环境搭建">
+                        <span class="hidden-mobile">微服务的环境搭建</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a>！ 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
