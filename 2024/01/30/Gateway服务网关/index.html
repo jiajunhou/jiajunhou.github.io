@@ -19,12 +19,12 @@
   <meta name="author" content="jj_hou">
   <meta name="keywords" content="">
   
-    <meta name="description" content="五 **Gateway–**服务网关5.1 网关简介​      大家都都知道在微服务架构中，一个系统会被拆分为很多个微服务。那么作为客户端要如何去调用这么多的微服务呢？如果没有网关的存在，我们只能在客户端记录每个微服务的地址，然后分别去调用。 这样的架构，会存在着诸多的问题：  客户端多次请求不同的微服务，增加客户端代码或配置编写的复杂性  认证复杂，每个服务都需要独立认证。  存在跨域请求，在">
+    <meta name="description" content="五 Gateway–服务网关5.1 网关简介​      大家都都知道在微服务架构中，一个系统会被拆分为很多个微服务。那么作为客户端要如何去调用这么多的微服务呢？如果没有网关的存在，我们只能在客户端记录每个微服务的地址，然后分别去调用。 这样的架构，会存在着诸多的问题：  客户端多次请求不同的微服务，增加客户端代码或配置编写的复杂性  认证复杂，每个服务都需要独立认证。  存在跨域请求，在一定场景">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Gateway服务网关">
-<meta property="og:url" content="http://example.com/2024/01/30/Gateway%E6%9C%8D%E5%8A%A1%E7%BD%91%E5%85%B3/index.html">
+<meta property="og:url" content="http://jiajunhou.github.io/2024/01/30/Gateway%E6%9C%8D%E5%8A%A1%E7%BD%91%E5%85%B3/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="五 **Gateway–**服务网关5.1 网关简介​      大家都都知道在微服务架构中，一个系统会被拆分为很多个微服务。那么作为客户端要如何去调用这么多的微服务呢？如果没有网关的存在，我们只能在客户端记录每个微服务的地址，然后分别去调用。 这样的架构，会存在着诸多的问题：  客户端多次请求不同的微服务，增加客户端代码或配置编写的复杂性  认证复杂，每个服务都需要独立认证。  存在跨域请求，在">
+<meta property="og:description" content="五 Gateway–服务网关5.1 网关简介​      大家都都知道在微服务架构中，一个系统会被拆分为很多个微服务。那么作为客户端要如何去调用这么多的微服务呢？如果没有网关的存在，我们只能在客户端记录每个微服务的地址，然后分别去调用。 这样的架构，会存在着诸多的问题：  客户端多次请求不同的微服务，增加客户端代码或配置编写的复杂性  认证复杂，每个服务都需要独立认证。  存在跨域请求，在一定场景">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/05Gateway%E6%9C%8D%E5%8A%A1%E7%BD%91%E5%85%B3.assets/image-20210604152804166.png">
 <meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/05Gateway%E6%9C%8D%E5%8A%A1%E7%BD%91%E5%85%B3.assets/image-20210604152826745.png">
@@ -39,7 +39,7 @@
 <meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/05Gateway%E6%9C%8D%E5%8A%A1%E7%BD%91%E5%85%B3.assets/image-20210604170313453.png">
 <meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/05Gateway%E6%9C%8D%E5%8A%A1%E7%BD%91%E5%85%B3.assets/image-20231011142817131.png">
 <meta property="article:published_time" content="2024-01-30T14:32:44.000Z">
-<meta property="article:modified_time" content="2025-01-24T15:02:37.717Z">
+<meta property="article:modified_time" content="2025-01-29T13:20:47.316Z">
 <meta property="article:author" content="jj_hou">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/05Gateway%E6%9C%8D%E5%8A%A1%E7%BD%91%E5%85%B3.assets/image-20210604152804166.png">
@@ -84,7 +84,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":65,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"jiajunhou.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":65,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -288,7 +288,7 @@
             
               <div class="markdown-body">
                 
-                <h1 id="五-Gateway–-服务网关"><a href="#五-Gateway–-服务网关" class="headerlink" title="五 **Gateway–**服务网关"></a><strong>五</strong> **Gateway–**服务网关</h1><h2 id="5-1-网关简介"><a href="#5-1-网关简介" class="headerlink" title="5.1 网关简介"></a><strong>5.1</strong> <strong>网关简介</strong></h2><p>​      大家都都知道在微服务架构中，一个系统会被拆分为很多个微服务。那么作为客户端要如何去调用这么多的微服务呢？如果没有网关的存在，我们只能在客户端记录每个微服务的地址，然后分别去调用。</p>
+                <h1 id="五-Gateway–服务网关"><a href="#五-Gateway–服务网关" class="headerlink" title="五 Gateway–服务网关"></a><strong>五</strong> Gateway–服务网关</h1><h2 id="5-1-网关简介"><a href="#5-1-网关简介" class="headerlink" title="5.1 网关简介"></a><strong>5.1</strong> <strong>网关简介</strong></h2><p>​      大家都都知道在微服务架构中，一个系统会被拆分为很多个微服务。那么作为客户端要如何去调用这么多的微服务呢？如果没有网关的存在，我们只能在客户端记录每个微服务的地址，然后分别去调用。</p>
 <p>这样的架构，会存在着诸多的问题：</p>
 <ul>
 <li><p>客户端多次请求不同的微服务，增加客户端代码或配置编写的复杂性</p>
@@ -681,7 +681,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>Gateway服务网关</div>
-      <div>http://example.com/2024/01/30/Gateway服务网关/</div>
+      <div>http://jiajunhou.github.io/2024/01/30/Gateway服务网关/</div>
     </div>
     <div class="license-meta">
       
@@ -725,9 +725,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/10/19/hello-world/" title="">
+                      <a href="/2024/01/31/Sleuth-Zipkin%E9%93%BE%E8%B7%AF%E8%BF%BD%E8%B8%AA/" title="Sleuth&amp;Zipkin链路追踪">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile"></span>
+                        <span class="hidden-mobile">Sleuth&amp;Zipkin链路追踪</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     

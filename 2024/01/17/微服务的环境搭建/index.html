@@ -19,19 +19,19 @@
   <meta name="author" content="jj_hou">
   <meta name="keywords" content="">
   
-    <meta name="description" content="二.微服务环境搭建我们本次是使用的电商项目中的商品、订单为案例进行讲解。    【要求微服务模块是包含与该模块相关的表的集合   外键不要直接定义了（心中有外键即可）】 注意： 所创建的所有的微服务的项目的包名要保持一致(如： com.hs……..) 2.1 案例准备2.1.1 技术选型maven：3.5.4 数据库：MySQL 8.0.26 持久层: mybatis-plus 其他: Sprin">
+    <meta name="description" content="二.微服务环境搭建使用的电商项目中的商品、订单为案例进行讲解。    【要求微服务模块是包含与该模块相关的表的集合   外键不要直接定义了（心中有外键即可）】 注意： 所创建的所有的微服务的项目的包名要保持一致(如： com.hjj……..) 2.1 案例准备2.1.1 技术选型maven：3.5.4 数据库：MySQL 8.0.26 持久层: mybatis-plus 其他: SpringClo">
 <meta property="og:type" content="article">
 <meta property="og:title" content="微服务的环境搭建">
-<meta property="og:url" content="http://example.com/2024/01/17/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:url" content="http://jiajunhou.github.io/2024/01/17/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%9A%84%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="二.微服务环境搭建我们本次是使用的电商项目中的商品、订单为案例进行讲解。    【要求微服务模块是包含与该模块相关的表的集合   外键不要直接定义了（心中有外键即可）】 注意： 所创建的所有的微服务的项目的包名要保持一致(如： com.hs……..) 2.1 案例准备2.1.1 技术选型maven：3.5.4 数据库：MySQL 8.0.26 持久层: mybatis-plus 其他: Sprin">
+<meta property="og:description" content="二.微服务环境搭建使用的电商项目中的商品、订单为案例进行讲解。    【要求微服务模块是包含与该模块相关的表的集合   外键不要直接定义了（心中有外键即可）】 注意： 所创建的所有的微服务的项目的包名要保持一致(如： com.hjj……..) 2.1 案例准备2.1.1 技术选型maven：3.5.4 数据库：MySQL 8.0.26 持久层: mybatis-plus 其他: SpringClo">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/02.%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.assets/image-20210605153115977.png">
 <meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/02.%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.assets/image-20210420111300369.png">
 <meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/02.%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.assets/dbc4373205004bffbc11cdc1b9ca693d.png">
 <meta property="og:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/02.%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.assets/image-20210420112612514.png">
 <meta property="article:published_time" content="2024-01-17T03:31:23.000Z">
-<meta property="article:modified_time" content="2025-01-24T14:22:59.625Z">
+<meta property="article:modified_time" content="2025-01-29T13:29:12.346Z">
 <meta property="article:author" content="jj_hou">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://jjhoublog-1338576386.cos.ap-chengdu.myqcloud.com/02.%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA.assets/image-20210605153115977.png">
@@ -76,7 +76,7 @@
   <script id="fluid-configs">
     var Fluid = window.Fluid || {};
     Fluid.ctx = Object.assign({}, Fluid.ctx)
-    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":65,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+    var CONFIG = {"hostname":"jiajunhou.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":65,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
 
     if (CONFIG.web_analytics.follow_dnt) {
       var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -280,9 +280,9 @@
             
               <div class="markdown-body">
                 
-                <h2 id="二-微服务环境搭建"><a href="#二-微服务环境搭建" class="headerlink" title="二.微服务环境搭建"></a>二.<strong>微服务环境搭建</strong></h2><p>我们本次是使用的电商项目中的商品、订单为案例进行讲解。</p>
+                <h2 id="二-微服务环境搭建"><a href="#二-微服务环境搭建" class="headerlink" title="二.微服务环境搭建"></a>二.<strong>微服务环境搭建</strong></h2><p>使用的电商项目中的商品、订单为案例进行讲解。</p>
 <p>   【要求微服务模块是包含与该模块相关的表的集合   外键不要直接定义了（心中有外键即可）】</p>
-<p>注意： 所创建的所有的微服务的项目的包名要保持一致(如： com.hs……..)</p>
+<p>注意： 所创建的所有的微服务的项目的包名要保持一致(如： com.hjj……..)</p>
 <h3 id="2-1-案例准备"><a href="#2-1-案例准备" class="headerlink" title="2.1 案例准备"></a><strong>2.1</strong> <strong>案例准备</strong></h3><h4 id="2-1-1-技术选型"><a href="#2-1-1-技术选型" class="headerlink" title="2.1.1 技术选型"></a><strong>2.1.1</strong> <strong>技术选型</strong></h4><p>maven：3.5.4</p>
 <p>数据库：MySQL 8.0.26</p>
 <p>持久层: mybatis-plus</p>
@@ -450,7 +450,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>微服务的环境搭建</div>
-      <div>http://example.com/2024/01/17/微服务的环境搭建/</div>
+      <div>http://jiajunhou.github.io/2024/01/17/微服务的环境搭建/</div>
     </div>
     <div class="license-meta">
       
